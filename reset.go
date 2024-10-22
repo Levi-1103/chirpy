@@ -1,11 +1,20 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func (cfg *apiConfig) handlerResetMetrics(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
+func (cfg *apiConfig) handlerResetUsers(w http.ResponseWriter, r *http.Request) {
+
+	if cfg.platform != "dev" {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("Reset is only allowed in dev environment."))
+		return
+	}
+
 	cfg.fileServerHits.Store(0)
-	w.Write([]byte("Hits reset to 0"))
+	cfg.db.ResetDB(r.Context())
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hits reset to 0 and database reset to initial state."))
 
 }
